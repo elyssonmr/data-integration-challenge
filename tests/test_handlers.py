@@ -38,7 +38,7 @@ class ImportClientJsonHandlerTestCase(AsyncHTTPTestCase):
 
         self.assertEqual(response.code, 200)
         body = json.loads(response.body)
-        self.assertEqual({"status": "processed"}, body)
+        self.assertEqual({"message": "Processed"}, body)
         _import_clients.assert_called_once_with(encoded_file)
 
     def test_import_without_file(self):
@@ -51,7 +51,7 @@ class ImportClientJsonHandlerTestCase(AsyncHTTPTestCase):
 
         self.assertEqual(response.code, 400)
         body = json.loads(response.body)
-        self.assertDictEqual({"status": "Empty Body"}, body)
+        self.assertDictEqual({"message": "Empty Body"}, body)
 
     def test_import_without_data(self):
         body = {
@@ -62,4 +62,19 @@ class ImportClientJsonHandlerTestCase(AsyncHTTPTestCase):
 
         self.assertEqual(response.code, 400)
         body = json.loads(response.body)
-        self.assertDictEqual({"status": "Empty Data File"}, body)
+        self.assertDictEqual({"message": "Empty Data File"}, body)
+
+    @patch("integration.handlers.ClientController.import_clients")
+    def test_import_without_sucess(self, _import_clients):
+        _import_clients.return_value = setup_future(False)
+        encoded_file = self._encode_file("tests/resources/clients_data.csv")
+        body = {
+            "dataFile": encoded_file
+        }
+
+        response = self.fetch("/", method="POST", body=json.dumps(body))
+
+        self.assertEqual(response.code, 400)
+        body = json.loads(response.body)
+        self.assertDictEqual({"message": "Could not import data"}, body)
+        _import_clients.assert_called_once_with(encoded_file)
