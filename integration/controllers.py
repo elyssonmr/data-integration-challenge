@@ -53,3 +53,6 @@ class CompaniesController:
             except ValueError:
                 pass
         return True
+
+    async def merge_companies(self, companies_csv):
+        pass
