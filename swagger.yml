@@ -1,0 +1,72 @@
+swagger: "2.0"
+info:
+  description: "Integration Challange"
+  version: "1.0.0"
+  title: "Integration Challange"
+  contact:
+    email: "elyssonmr@gmail.com"
+host: "localhost:8000"
+basePath: "/api"
+tags:
+- name: "companies"
+  description: "Filter and Merge Companies"
+
+schemes:
+- "http"
+paths:
+  /companies:
+    get:
+      tags:
+      - "companies"
+      summary: "Filter the companies"
+      description: "Filter the companies"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "name"
+        description: "Name of the company to search"
+      - in: "query"
+        name: "zip"
+        description: "Zip address to search"
+      responses:
+        200:
+          description: "List of companies"
+          schema:
+            $ref: '#/definitions/CampanyResponse'
+  /companies/merge:
+    post:
+      tags:
+      - "companies"
+      summary: "Filter the companies"
+      description: "Filter the companies"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "data"
+        description: "base64 CSV File with companies to merge"
+      responses:
+        200:
+          description: "OK"
+definitions:
+  CampanyResponse:
+    allOf:
+      - type: object
+        properties:
+          id:
+            type: "string"
+            description: "Company's identification"
+            example: 123abc
+          name:
+            type: "string"
+            description: "Company's name"
+            example: Yawoen
+          addressZip:
+            type: "string"
+            description: "Company's AddressZip"
+            example: 12345
+          website:
+            type: "string"
+            description: "Company's  Website"
+            example: www.exaple.com
