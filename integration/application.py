@@ -3,7 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from integration import config
 from integration.controllers import CompaniesController
-from integration.handlers import ImportClientJsonHandler
+from integration.handlers import ImportCompaniesJsonHandler, CompaniesHandler
 
 
 def config_mongodb():
@@ -18,7 +18,8 @@ async def load_initial_data(db):
 
 async def make_app():
     handlers = [
-        (r"/api/merge", ImportClientJsonHandler)
+        (r"^/api/companies$", CompaniesHandler),
+        (r"^/api/companies/merge/?$", ImportCompaniesJsonHandler)
     ]
     db = config_mongodb()
     settings = {

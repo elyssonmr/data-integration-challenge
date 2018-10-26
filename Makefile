@@ -1,7 +1,7 @@
 #Challenge Makefile
 
 start:
-#TODO: commands necessary to start the API
+	docker-compose up -d --build
 
 check:
 	pytest --cov-report term-missing --cov=integration tests/

@@ -1,17 +1,20 @@
 from csv import DictReader
 from io import StringIO
+import logging
 
 
 class CompaniesController:
-    FIELDSNAME = ["name", "addressZip"]
+    IMPORT_FIELDS = ["name", "addressZip"]
+    MERGE_FIELDS = ["name", "addressZip", "website"]
+
 
     def __init__(self, db):
         self._companies_collection = db["companies"]
 
-    def _parse_csv(self, companies_csv):
+    def _parse_csv(self, companies_csv, fields):
         # TODO: run in executor due the possibility of high data volume
         companies = []
-        reader = DictReader(StringIO(companies_csv), fieldnames=self.FIELDSNAME,
+        reader = DictReader(StringIO(companies_csv), fieldnames=fields,
                             delimiter=";")
         for row in reader:
             companies.append(dict(row))
@@ -31,28 +34,59 @@ class CompaniesController:
             raise ValueError("Field 'adressZip' should have only 5 characters")
 
     def _normalize_company(self, company):
-        return {
+        normalized_data = {
             "name": company['name'].upper(),
             "addressZip": company["addressZip"]
         }
 
-    async def _save_company(self, company):
-        # Update to not duplicate
-        print(company)
-        self._companies_collection.update_one(
-            company,
-            {"$set": company}, upsert=True)
+        if "website" in company:
+            normalized_data["website"] = company["website"].lower()
 
-    async def import_companies(self, companies_csv):
-        companies = self._parse_csv(companies_csv)
+        return normalized_data
+
+    async def _save_company(self, company, should_insert):
+        # Update to not duplicate
+        search_filter = {
+            "name": company["name"],
+            "addressZip": company["addressZip"]
+        }
+        await self._companies_collection.update_one(
+            search_filter,
+            {"$set": company}, upsert=should_insert)
+
+    async def _import_csv(self, companies_csv, csv_fields, should_update):
+        companies = self._parse_csv(companies_csv, csv_fields)
         for company in companies:
             try:
                 self._validate_company(company)
                 normalized_company = self._normalize_company(company)
-                await self._save_company(normalized_company)
-            except ValueError:
+                await self._save_company(normalized_company, should_update)
+            except ValueError as ex:
                 pass
+
         return True
 
+    async def import_companies(self, companies_csv):
+        return await self._import_csv(companies_csv, self.IMPORT_FIELDS, True)
+
     async def merge_companies(self, companies_csv):
-        pass
+        return await self._import_csv(companies_csv, self.MERGE_FIELDS, False)
+
+    async def filter_companies(self, name, address_zip):
+        search_filter = {}
+        if name:
+            search_filter["name"] = {
+                "$regex": f".*{name.upper()}.*"
+            }
+
+        if address_zip:
+            search_filter["addressZip"] = address_zip
+
+        companies = await self._companies_collection.find(
+            search_filter).to_list(None)
+
+        for company in companies:
+            company["id"] = str(company["_id"])
+            del company["_id"]
+
+        return companies

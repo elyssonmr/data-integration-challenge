@@ -8,6 +8,8 @@ from integration.controllers import CompaniesController
 from tests import setup_future
 
 COMPANIES_DATA = "name;addressZip\ntola sales group;78229"
+MERGE_DATA = ("name;addresszip;website\n"
+              "tola sales group;78229;http://repsources.com")
 
 
 class CompanyControllerTestCase(AsyncTestCase):
@@ -20,7 +22,15 @@ class CompanyControllerTestCase(AsyncTestCase):
 
     @gen_test
     async def test_import_companies(self):
+        self.db.update_one.return_value = setup_future()
         resp = await self.controller.import_companies(COMPANIES_DATA)
+
+        self.assertTrue(resp)
+
+    @gen_test
+    async def test_merge_companies(self):
+        self.db.update_one.return_value = setup_future()
+        resp = await self.controller.merge_companies(MERGE_DATA)
 
         self.assertTrue(resp)
 
@@ -60,7 +70,7 @@ class CompanyControllerTestCase(AsyncTestCase):
         self.db.update_one.return_value = setup_future()
         company = {"name": "tola sales group", "addressZip": "78229"}
 
-        await self.controller._save_company(company)
+        await self.controller._save_company(company, True)
 
         self.db.update_one.assert_called_once_with(company, {"$set": company}, upsert=True)
 
@@ -71,6 +81,7 @@ class CompanyControllerTestCase(AsyncTestCase):
             "addressZip": "78229"
         }
 
-        csv = self.controller._parse_csv(COMPANIES_DATA)
+        csv = self.controller._parse_csv(
+            COMPANIES_DATA, self.controller.IMPORT_FIELDS)
 
         self.assertListEqual(csv, [expected_csv])

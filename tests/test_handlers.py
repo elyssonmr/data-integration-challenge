@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 from tornado.web import Application
 from tornado.testing import AsyncHTTPTestCase
 
-from integration.handlers import ImportClientJsonHandler
+from integration.handlers import ImportCompaniesJsonHandler
 
 from tests import setup_future
 
@@ -13,7 +13,7 @@ MERGE_DATA = ("name;addresszip;website\n"
               "tola sales group;78229;http://repsources.com")
 
 
-class ImportClientJsonHandlerTestCase(AsyncHTTPTestCase):
+class ImportCompaniesJsonHandlerTestCase(AsyncHTTPTestCase):
     def setUp(self):
         self.companies = Mock()
         self.db = MagicMock()
@@ -23,7 +23,7 @@ class ImportClientJsonHandlerTestCase(AsyncHTTPTestCase):
 
     def get_app(self):
        handlers = [
-           (r"/", ImportClientJsonHandler)
+           (r"/", ImportCompaniesJsonHandler)
        ]
 
        return Application(handlers, db=self.db)
