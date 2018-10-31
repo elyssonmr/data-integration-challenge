@@ -1,4 +1,6 @@
--r requirementes.txt
+-r requirements.txt
 
 ipython==7.0.1
 flake8==3.5.0
+pytest==3.9.1
+pytest-cov==2.6.0

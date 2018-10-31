@@ -46,6 +46,8 @@ paths:
       - in: "body"
         name: "data"
         description: "base64 CSV File with companies to merge"
+        schema:
+            $ref: '#/definitions/MergeCsv'
       responses:
         200:
           description: "OK"
@@ -70,3 +72,11 @@ definitions:
             type: "string"
             description: "Company's  Website"
             example: www.exaple.com
+  MergeCsv:
+    allOf: 
+      - type: object
+        properties:
+          data:
+            type: "string"
+            description: "CSV file with columns 'name', 'addressZip' and 'website'"
+            example: "bmFtZTthZGRyZXNzWmlwO3dlYnNpdGUKdG9sYSBzYWxlcyBncm91cDs3ODIyOTtodHRwOi8vcmVwc291cmNlcy5jb20="

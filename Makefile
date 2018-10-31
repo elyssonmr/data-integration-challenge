@@ -1,10 +1,12 @@
 #Challenge Makefile
 
+PWD = $(shell pwd)
+
 start:
 	docker-compose up -d --build
 
 check:
-	pytest --cov-report term-missing --cov=integration tests/
+	docker run --rm --name challange_test -v "${PWD}:/usr/app/" challange:latest pytest --cov-report term-missing --cov=/usr/app/integration /usr/app/tests/
 
-#setup:
-#if needed to setup the enviroment before starting it
+setup:
+	docker build -f Dockerfile-tests -t challange:latest .
